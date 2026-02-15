@@ -1,0 +1,45 @@
+# demo.py
+import os
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# --- Parameters ---
+img_height, img_width = 128, 128
+batch_size = 16
+train_dir = "data/train"
+
+# --- Image Data Generator for Preprocessing ---
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=20,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    horizontal_flip=True
+)
+
+# --- Load Images ---
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(img_height, img_width),
+    batch_size=batch_size,
+    class_mode='categorical'
+)
+
+# --- Print Classes and Sample Batch ---
+print("Detected Classes:", train_generator.class_indices)
+sample_batch = next(train_generator)
+print("Batch shape (images, labels):", sample_batch[0].shape, sample_batch[1].shape)
+
+# --- Model Skeleton (without training) ---
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+
+model = Sequential([
+    Conv2D(32, (3,3), activation='relu', input_shape=(img_height,img_width,3)),
+    MaxPooling2D(2,2),
+    Flatten(),
+    Dense(128, activation='relu'),
+    Dense(5, activation='softmax')  # 5 classes: No_DR, Mild, Moderate, Severe, Proliferative
+])
+
+# --- Summary of the Model ---
+model.summary()
