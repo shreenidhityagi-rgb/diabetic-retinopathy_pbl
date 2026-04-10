@@ -1,0 +1,56 @@
+import cv2
+import os
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
+data = []
+labels = []
+
+folder = "messidor_images"   # RAW images 
+
+for i, file in enumerate(os.listdir(folder)):
+    path = os.path.join(folder, file)
+    
+    img = cv2.imread(path)
+    
+    if img is None:
+        continue
+    
+    # -------- PREPROCESSING --------
+    
+    # Resize
+    img = cv2.resize(img, (256, 256))
+    
+    # Grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # Noise removal
+    blur = cv2.GaussianBlur(gray, (5,5), 0)
+    
+    # Contrast enhancement
+    eq = cv2.equalizeHist(blur)
+    
+    # -------- MODEL INPUT --------
+    
+    img_flat = eq.flatten()
+    
+    data.append(img_flat)
+    
+    # dummy labels (for demo)
+    labels.append(i % 2)
+
+X = np.array(data)
+y = np.array(labels)
+
+# split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# model
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+accuracy = model.score(X_test, y_test)
+
+print("Model trained successfully!")
+print("Accuracy:", accuracy)
